@@ -28,6 +28,9 @@ var courier = new Courier(
 
 IDeliveryMethod deliveryMethod = new StandardDelivery();
 
+IDeliveryMethod expressDelivery = new ExpressDelivery();
+
+
 var order = new DeliveryOrder(
     1,
     customer,
@@ -43,6 +46,7 @@ order.AssignCourier(courier);
 
 Console.WriteLine($"Customer: {customer}");
 Console.WriteLine($"Delivery method: {deliveryMethod.Name}");
+Console.WriteLine($"Express delivery cost: {expressDelivery.CalculateCost(3)} грн");
 Console.WriteLine($"Parcels: {order.Parcels.Count}");
 Console.WriteLine($"Total weight: {order.GetTotalWeight()} kg");
 Console.WriteLine($"Delivery cost: {order.GetDeliveryCost()} грн");
