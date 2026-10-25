@@ -2,6 +2,8 @@ namespace DeliveryService.Domain;
 
 public class DeliveryOrder
 {
+    // Encapsulation:
+    // зовнішній код не може напряму змінювати список посилок.
     private readonly List<Parcel> _parcels = new();
 
     public int Id { get; }
@@ -10,10 +12,12 @@ public class DeliveryOrder
 
     public Courier? Courier { get; private set; }
 
+    // State
     public bool IsStarted { get; private set; }
     public bool IsCompleted { get; private set; }
     public bool IsCancelled { get; private set; }
 
+    // Encapsulation + read-only access
     public IReadOnlyCollection<Parcel> Parcels => _parcels.AsReadOnly();
 
     public DeliveryOrder(
@@ -26,17 +30,25 @@ public class DeliveryOrder
         DeliveryMethod = deliveryMethod;
     }
 
+    // Behavior
     public void AddParcel(Parcel parcel)
     {
-        if (IsCancelled || IsCompleted)
+        if (IsCancelled)
         {
             throw new InvalidOperationException(
-                "Cannot add parcel to completed or cancelled order.");
+                "Cannot add parcel to cancelled order.");
+        }
+
+        if (IsCompleted)
+        {
+            throw new InvalidOperationException(
+                "Cannot add parcel to completed order.");
         }
 
         _parcels.Add(parcel);
     }
 
+    // Behavior
     public void AssignCourier(Courier courier)
     {
         if (IsCancelled)
@@ -54,12 +66,19 @@ public class DeliveryOrder
         Courier = courier;
     }
 
+    // Behavior
     public void StartDelivery()
     {
         if (IsCancelled)
         {
             throw new InvalidOperationException(
                 "Cancelled order cannot be started.");
+        }
+
+        if (IsCompleted)
+        {
+            throw new InvalidOperationException(
+                "Completed order cannot be started again.");
         }
 
         if (Courier is null)
@@ -71,6 +90,7 @@ public class DeliveryOrder
         IsStarted = true;
     }
 
+    // Behavior
     public void CompleteDelivery()
     {
         if (IsCancelled)
@@ -85,9 +105,16 @@ public class DeliveryOrder
                 "Delivery must be started before completion.");
         }
 
+        if (IsCompleted)
+        {
+            throw new InvalidOperationException(
+                "Delivery is already completed.");
+        }
+
         IsCompleted = true;
     }
 
+    // Behavior
     public void Cancel()
     {
         if (IsCompleted)
@@ -112,13 +139,19 @@ public class DeliveryOrder
     public string GetStatus()
     {
         if (IsCancelled)
+        {
             return "Cancelled";
+        }
 
         if (IsCompleted)
+        {
             return "Completed";
+        }
 
         if (IsStarted)
+        {
             return "In delivery";
+        }
 
         return "Created";
     }
